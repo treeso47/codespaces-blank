@@ -57,7 +57,7 @@ int main(){
         else if ((input == 'a' || input == KEY_LEFT) && direction != RIGHT) direction = LEFT;
         else if ((input == 'd' || input == KEY_RIGHT) && direction != LEFT) direction = RIGHT;
         else if (input == 'q' || input == 'Q') break;
-    }
+    } 
 
     //sleep(1);
     // Game over screen
