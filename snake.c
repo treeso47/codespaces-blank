@@ -21,8 +21,13 @@ int score = 0;
 int maxX, maxY;
 int snakeLength, goalLength;    //to keep track of current and goal lengths
 
-//function for getting time played
+// Generate random food position
+void place_food() {
+    foodX = rand() % (maxX - 2) + 1;
+    foodY = rand() % (maxY - 3) + 2;
+}
 
+//function for getting time played
 int time_update(time_t start){
     time_t current = time(NULL);
     int elapsed = difftime(current, start);
@@ -51,11 +56,18 @@ int main(){
     
     snakeLength = 3;
     goalLength = 2*(maxY+maxX);
+
+    //Generate coordinates for the food item
+    place_food();
     
     //record when started
     time_t start = time(NULL);
 
     while(1){
+
+        //Create food item
+        mvprintw(foodY, foodX, "O");
+
         // Display score
         mvprintw(0, 2, "Score: %d", score);
         int cur_time = time_update(start);
@@ -88,6 +100,7 @@ int main(){
     else{mvprintw(maxY / 2, (maxX / 2) - 5, "GAME OVER");}
     mvwprintw(gameWin, LINES / 2, (COLS / 2) - 7, "Final Score: %d", score);
     //mvprintw(LINES / 2, (COLS / 2) - 5, "GAME OVER");
+    mvprintw(0, COLS - 20, "Time Elapsed:");
     wrefresh(gameWin);
     refresh();
     nodelay(stdscr, FALSE);
