@@ -68,6 +68,15 @@ int self_collision() {
     return 0;
 }
 
+// Free memory allocated to snake
+void free_memory() {
+    while (snake) {
+        SnakeSegment *current = snake;
+        snake = snake->next;
+        free(current);
+    }
+}
+
 //function for getting time played
 int time_update(){
     time_t current = time(NULL);                //gets the current time
@@ -115,11 +124,21 @@ int main(){
         snakeLength++;
     }*/
 
-    //Generate initial coordinates for the food item
-    place_food();
-    
-    //record when started
-    /*time_t*/ start = time(NULL);
+    //start screen
+    mvwprintw(gameWin, (maxY / 2) - 1, (maxX / 2) - 8, "Welcome to Snake");     //Start screen content for the game
+    mvwprintw(gameWin, (maxY / 2), (maxX / 2) - 10, "Press Space To Start");    //Tells user to press the space bar to start
+    wrefresh(gameWin);
+    while(1){               //wait for user input before starting
+        if(getch() == ' '){                                     //if user presses the Spacebar
+            wclear(gameWin);                                        //clears window
+            //Generate initial coordinates for the food item
+            place_food();
+            
+            //record when started
+            /*time_t*/ start = time(NULL);                          //initializes start time
+            break;
+        }
+    }
 
     while(1){
         //clear previous content
@@ -200,13 +219,14 @@ int main(){
     else{mvwprintw(gameWin, (maxY / 2) - 1, (maxX / 2) - 5, "Game Over");}                          //if win condition not met
     mvwprintw(gameWin, maxY / 2, (maxX / 2) - 7, "Final Score: %d", score);        //displays current score
     //mvprintw(LINES / 2, (COLS / 2) - 5, "GAME OVER");
-    mvprintw(0, COLS - 20, "Time Elapsed:");                //adds "Time Elapses: " in front of play time
+    mvprintw(0, COLS - 19, "Time Elapsed:");                //adds "Time Elapses: " in front of play time
     wrefresh(gameWin);          //refresh content for game window to show the new content
     refresh();                  //refresh window the show content not in snake pit
     napms(500);    //in case user presses a key at the same time that they lose
     nodelay(stdscr, FALSE);     //add delay for user to see above text
     getch();        //wait for user input before closing
     //sleep(1);
+    free_memory();
     endwin();
     exit(0);
     return 0;
