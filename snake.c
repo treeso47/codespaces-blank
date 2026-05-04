@@ -101,6 +101,18 @@ int main(){
         resizeterm(LINES,20);
     }*/
 
+    if(LINES < 21 || COLS < 20){
+        mvprintw(LINES/2, (COLS/2)-17, "Terminal must be at least 21hx20w");
+        mvprintw((LINES/2)+1, (COLS/2)-9, "Current: %3dhx%dw", LINES, COLS);
+        refresh();
+        nodelay(stdscr, FALSE);
+        getch();
+        endwin();
+        exit(0);
+        //printf("Terminal must be at least 20x20");
+        return 1;
+    }
+
     // define snake pit and create border
     WINDOW *gameWin = newwin(LINES-1,COLS,1,0);     //defines snake pit size
     refresh();
