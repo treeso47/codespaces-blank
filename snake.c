@@ -112,7 +112,7 @@ void gameOver(){
     else{mvwprintw(gameWin, (maxY / 2) - 1, (maxX / 2) - 5, "Game Over");}                          //if win condition not met
     mvwprintw(gameWin, maxY / 2, (maxX / 2) - 7, "Final Score: %d", score);        //displays current score
     mvprintw(0, (maxX/2) - 6, "            ");      //remove 'q' to quit indicator
-    mvprintw(0, maxX - 19, "Time Elapsed:");                //adds "Time Elapses: " in front of play time
+    if(gameStarted){mvprintw(0, maxX - 19, "Time Elapsed:");}                //adds "Time Elapses: " in front of play time if played
     wrefresh(gameWin);          //refresh content for game window to show the new content
     refresh();                  //refresh window the show content not in snake pit
     napms(1000);    //in case user presses a key at the same time that they lose
@@ -212,9 +212,9 @@ int main(){
         create_game_window();   //recreate window
         mvwprintw(gameWin, (maxY / 2) - 1, (maxX / 2) - 8, "Welcome to Snake");     //Start screen content for the game
         //mvwprintw(gameWin, (maxY / 2), (maxX / 2) - 11, "Press Space To Start");    //Tells user to press the space bar to start
-        mvwprintw(gameWin, (maxY / 2), (maxX / 2) - 10, "Select Window Size");
-        mvwprintw(gameWin, (maxY / 2)+1, (maxX / 2) - 9, "0: Fixed %dhx%dw", maxY, maxX);
-        mvwprintw(gameWin, (maxY / 2)+2, (maxX / 2) - 11, "1: Full Terminal");
+        mvwprintw(gameWin, (maxY / 2), (maxX / 2) - 9, "Select Window Size");
+        mvwprintw(gameWin, (maxY / 2)+1, (maxX / 2) - 8, "0: Fixed %dhx%dw", HEIGHT, WIDTH);
+        mvwprintw(gameWin, (maxY / 2)+2, (maxX / 2) - 8, "1: Full Terminal");
         wrefresh(gameWin);
         int startInput = getch();
         if(startInput == '1' || startInput == '2'){                                     //if user presses the Spacebar
@@ -223,6 +223,8 @@ int main(){
             start = time(NULL);                                 //initializes start time
             gameStarted = 1;
             break;      //continue to game
+        } else if(startInput == 'q'){
+            gameOver();
         }
         napms(waitTime);                 //wait before checking again
     }
