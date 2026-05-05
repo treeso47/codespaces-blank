@@ -1,7 +1,6 @@
 #include <ncurses.h>
 #include <stdlib.h>
 #include <time.h>
-#include <unistd.h>     //only here for testing basic layout with sleep()
 
 // Directions
 #define UP 0
@@ -204,14 +203,6 @@ int main(){
     //create snake pit
     create_game_window();
 
-    //create snake at center
-    snake_head((maxX / 2)-2, maxY / 2);
-    snake_head((snake->x)+1, (snake->y));
-    snake_head((snake->x)+1, (snake->y));
-
-    //Generate initial coordinates for the food item
-    place_food();
-
     //defines initial snake length value
     snakeLength = 3;
 
@@ -220,10 +211,15 @@ int main(){
         term_size();        //check terminal size on start screen
         create_game_window();   //recreate window
         mvwprintw(gameWin, (maxY / 2) - 1, (maxX / 2) - 8, "Welcome to Snake");     //Start screen content for the game
-        mvwprintw(gameWin, (maxY / 2), (maxX / 2) - 11, "Press Space To Start");    //Tells user to press the space bar to start
+        //mvwprintw(gameWin, (maxY / 2), (maxX / 2) - 11, "Press Space To Start");    //Tells user to press the space bar to start
+        mvwprintw(gameWin, (maxY / 2), (maxX / 2) - 10, "Select Window Size");
+        mvwprintw(gameWin, (maxY / 2)+1, (maxX / 2) - 9, "0: Fixed %dhx%dw", maxY, maxX);
+        mvwprintw(gameWin, (maxY / 2)+2, (maxX / 2) - 11, "1: Full Terminal");
         wrefresh(gameWin);
-        if(getch() == ' '){                                     //if user presses the Spacebar
+        int startInput = getch();
+        if(startInput == '1' || startInput == '2'){                                     //if user presses the Spacebar
             //marks start time
+            setSize = startInput - 49;
             start = time(NULL);                                 //initializes start time
             gameStarted = 1;
             break;      //continue to game
@@ -231,13 +227,24 @@ int main(){
         napms(waitTime);                 //wait before checking again
     }
 
+    //check terminal size
+    term_size();
+    //recreate snake pit
+    create_game_window();
+
+    //create snake at center
+    snake_head((maxX / 2)-2, maxY / 2);
+    snake_head((snake->x)+1, (snake->y));
+    snake_head((snake->x)+1, (snake->y));
+
+    //Generate initial coordinates for the food item
+    place_food();
+
     while(1){
         //clear previous content
         wclear(gameWin);                                        //clears start message from window
         clear();
         refresh();
-
-        //if(getch() == 'p'){ pause_game();}
 
         //check to see if current terminal size meets requirements
         term_size();
