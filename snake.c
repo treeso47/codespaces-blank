@@ -8,7 +8,7 @@
 #define DOWN 1
 #define LEFT 2
 #define RIGHT 3
-#define WIDTH 40    //defines the width
+#define WIDTH 80    //defines the width
 #define HEIGHT 20   // and height for the game area
 
 typedef struct SnakeSegment {
@@ -225,7 +225,7 @@ int main(){
     mvprintw(0, maxX - 19, "Time Elapsed:");                //adds "Time Elapses: " in front of play time
     wrefresh(gameWin);          //refresh content for game window to show the new content
     refresh();                  //refresh window the show content not in snake pit
-    napms(500);    //in case user presses a key at the same time that they lose
+    napms(1000);    //in case user presses a key at the same time that they lose
     nodelay(stdscr, FALSE);     //add delay for user to see above text
     getch();        //wait for user input before closing
     free_memory();      //frees the memory allocated to the snake and it's segments
