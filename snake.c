@@ -8,8 +8,8 @@
 #define DOWN 1
 #define LEFT 2
 #define RIGHT 3
-#define WIDTH 30    //trying to define size
-#define HEIGHT 10
+#define WIDTH 40    //defines the width
+#define HEIGHT 20   // and height for the game area
 
 typedef struct SnakeSegment {
     int x, y;
@@ -23,6 +23,8 @@ int score = 0;                  //player score int value
 int maxX, maxY;                 //the outermost x and y values
 int snakeLength, goalLength;    //to keep track of current and goal lengths
 time_t start;
+int setSize = 0;       // 1 = game area based on terminal size, 0 = game area predefined
+WINDOW *gameWin;        //snake pit window
 
 // Add a new head to the snake
 void snake_head(int x, int y) {
@@ -40,17 +42,16 @@ void snake_head(int x, int y) {
 
 void draw_snake(){
     // Draw snake segments at current location
-    SnakeSegment *segment = snake;
-    while (segment) {
-        mvprintw(segment->y, segment->x, "#");
-        segment = segment->next;
+    SnakeSegment *segment = snake;              //point to front of snake
+    while (segment) {                           //cycle through the subsequent objects attached to it
+        mvprintw(segment->y, segment->x, "#");  // and draw each segment at it's x & y coordinates
+        segment = segment->next;                // then look at next segment
     }
 }
 
 // Remove the tail segment
 void remove_tail() {
     SnakeSegment *current = snake;          //looks at current front of snake
-    //if (!current || !current->next) return; //if the snakeSegment points to nothing or it has no next segment
 
     while (current->next->next) {   //checks to see if there is a segment two locations behind the current
         current = current->next;    //if so check again with next segment
@@ -100,35 +101,29 @@ int main(){
     curs_set(FALSE);                    //makes cursor invisible
     keypad(stdscr, TRUE);               //allows arrow input from keypad
     nodelay(stdscr, TRUE);              // sets content to run without delay w/out needs input to move
-    //getmaxyx(stdscr, maxY, maxX);
+
+    //define snake pit
+    if(setSize){
+        if(LINES < 21 || COLS < 20){
+            mvprintw(LINES/2, (COLS/2)-17, "Terminal must be at least 21hx20w");    //notifies user of terminal requirements
+            mvprintw((LINES/2)+1, (COLS/2)-9, "Current: %3dhx%dw", LINES, COLS);    // and their current size
+            refresh();
+            nodelay(stdscr, FALSE);     //turns back on delay so user can see message
+            getch();                    // and waits for user to press a character to start
+            endwin();
+            exit(0);
+            return 1;
+        }
+        gameWin = newwin(LINES-1,COLS,1,0);         //defines snake pit size based on the terminal size
+    } else {
+        gameWin = newwin(HEIGHT-1,WIDTH,1,0);       //defines snake pit size based on predefined HEIGHT and WIDTH values
+    }
+
+    // create border of snake pit
     //refresh();
-
-    /*if(LINES < 21){
-        resizeterm(21,COLS);
-    }
-    if(COLS < 20){
-        resizeterm(LINES,20);
-    }*/
-
-    if(LINES < 21 || COLS < 20){
-        mvprintw(LINES/2, (COLS/2)-17, "Terminal must be at least 21hx20w");
-        mvprintw((LINES/2)+1, (COLS/2)-9, "Current: %3dhx%dw", LINES, COLS);
-        refresh();
-        nodelay(stdscr, FALSE);
-        getch();
-        endwin();
-        exit(0);
-        //printf("Terminal must be at least 20x20");
-        return 1;
-    }
-
-    // define snake pit and create border
-    WINDOW *gameWin = newwin(LINES-1,COLS,1,0);     //defines snake pit size
-    refresh();
     box(gameWin,0,0);                               //creates border for the snake pit area
-    wrefresh(gameWin);
-    //nodelay(gameWin, TRUE);
-    getmaxyx(gameWin, maxY, maxX);
+    //wrefresh(gameWin);
+    getmaxyx(gameWin, maxY, maxX);                  //gets the height and width for the snake pit
     refresh();
 
     //create snake at center
@@ -136,14 +131,12 @@ int main(){
     snake_head((snake->x)+1, (snake->y));
     snake_head((snake->x)+1, (snake->y));
 
+    //Generate initial coordinates for the food item
+    place_food();
+
+    //defines initial snake length value and goal length
     snakeLength = 3;
     goalLength = maxY+maxX;
-    /*snakeLength = goalLength - 2;   //this and next for testing win condition
-    score = goalLength - 5;         //and seeing what the winning value would be
-    while(snakeLength < (goalLength /5)){  //for testing, remove later
-        snake_head((snake->x)+1, (snake->y));
-        snakeLength++;
-    }*/
 
     //start screen
     mvwprintw(gameWin, (maxY / 2) - 1, (maxX / 2) - 8, "Welcome to Snake");     //Start screen content for the game
@@ -151,18 +144,17 @@ int main(){
     wrefresh(gameWin);
     while(1){               //wait for user input before starting
         if(getch() == ' '){                                     //if user presses the Spacebar
-            wclear(gameWin);                                        //clears window
-            //Generate initial coordinates for the food item
-            place_food();
             
-            //record when started
-            /*time_t*/ start = time(NULL);                          //initializes start time
+            //marks start time
+            start = time(NULL);                                 //initializes start time
             break;
+
         }
     }
 
     while(1){
         //clear previous content
+        wclear(gameWin);                                        //clears start message from window
         clear();
         refresh();
 
@@ -173,12 +165,13 @@ int main(){
         //Create food item
         mvprintw(foodY, foodX, "O");
 
+        //draws the snake
         draw_snake();
 
         // Display score & current play time
         mvprintw(0, 2, "Score: %d", score);     //places score
         int cur_time = time_update();      //gets current play time
-        mvprintw(0, COLS - 6, "%2d:%02d", cur_time/60, cur_time%60);    //displays play time in seconds and minutes in top right
+        mvprintw(0, maxX - 6, "%2d:%02d", cur_time/60, cur_time%60);    //displays play time in seconds and minutes in top right
         refresh();
 
         //User Inputs
@@ -207,36 +200,30 @@ int main(){
         snake_head(frontX, frontY);
 
         // Check if food has been eaten
-        if (frontX == foodX && frontY == foodY) {   //if food eaten the snake does lose last segment
-            score++;                //increment score
-            snakeLength++;          // and snake length
-            place_food();           // generate new food item coordinates
-        } else {
-            remove_tail();          // if not eaten the snake loses it's last segment/tail
+        if (frontX == foodX && frontY == foodY) {   //if food eaten
+            score++;                                // increment score
+            snakeLength++;                          // and snake length
+            place_food();                           // generate new food item coordinates
+        } else {                                    //if not eaten
+            remove_tail();                          // snake loses it's last segment/tail
         }
 
         napms(100); // Delay for snake speed
     }
 
-    //sleep(1);
     // Game over screen
     wclear(gameWin);        //clear content from snake pit
-    //wrefresh(gameWin);      //refresh content for snake pit
     box(gameWin,0,0);       //regenerate box for snake pit
-    // mvprintw(maxY / 2, (maxX / 2) - 5, "GAME OVER");
-    // mvprintw(maxY / 2 + 1, (maxX / 2) - 7, "Final Score: %d", score);
     if(snakeLength == goalLength){mvwprintw(gameWin, (maxY / 2) - 1, (maxX / 2) - 4, "You Win");}   //if win condition met
     else{mvwprintw(gameWin, (maxY / 2) - 1, (maxX / 2) - 5, "Game Over");}                          //if win condition not met
     mvwprintw(gameWin, maxY / 2, (maxX / 2) - 7, "Final Score: %d", score);        //displays current score
-    //mvprintw(LINES / 2, (COLS / 2) - 5, "GAME OVER");
-    mvprintw(0, COLS - 19, "Time Elapsed:");                //adds "Time Elapses: " in front of play time
+    mvprintw(0, maxX - 19, "Time Elapsed:");                //adds "Time Elapses: " in front of play time
     wrefresh(gameWin);          //refresh content for game window to show the new content
     refresh();                  //refresh window the show content not in snake pit
     napms(500);    //in case user presses a key at the same time that they lose
     nodelay(stdscr, FALSE);     //add delay for user to see above text
     getch();        //wait for user input before closing
-    //sleep(1);
-    free_memory();
+    free_memory();      //frees the memory allocated to the snake and it's segments
     endwin();
     exit(0);
     return 0;
