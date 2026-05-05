@@ -212,8 +212,8 @@ int main(){
         create_game_window();   //recreate window
         mvwprintw(gameWin, (maxY / 2) - 1, (maxX / 2) - 8, "Welcome to Snake");     //Start screen content for the game
         mvwprintw(gameWin, (maxY / 2), (maxX / 2) - 9, "Select Window Size");               //User selects play area size
-        mvwprintw(gameWin, (maxY / 2)+1, (maxX / 2) - 8, "0: Fixed (%dhx%dw)", HEIGHT, WIDTH);
-        mvwprintw(gameWin, (maxY / 2)+2, (maxX / 2) - 8, "1: Full Terminal");
+        mvwprintw(gameWin, (maxY / 2)+1, (maxX / 2) - 8, "1: Fixed (%dhx%dw)", HEIGHT, WIDTH);
+        mvwprintw(gameWin, (maxY / 2)+2, (maxX / 2) - 8, "2: Full Terminal");
         wrefresh(gameWin);
         int startInput = getch();
         if(startInput == '1' || startInput == '2'){                                     //if user presses the Spacebar
