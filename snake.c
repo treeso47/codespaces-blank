@@ -25,6 +25,7 @@ int snakeLength, goalLength;    //to keep track of current and goal lengths
 time_t start;
 int setSize = 0;       // 1 = game area based on terminal size, 0 = game area predefined
 WINDOW *gameWin;        //snake pit window
+int minWidth, minHeight;    //int values for defining the minimum terminal size
 
 void create_game_window(){
     if(setSize){
@@ -99,6 +100,24 @@ void free_memory() {
     }
 }
 
+void term_size(){
+   while(LINES < minHeight || COLS < minWidth){
+        clear();
+        mvprintw(LINES/2, (COLS/2)-17, "Terminal must be at least %02dhx%02dw", minHeight, minWidth);    //notifies user of terminal requirements
+        mvprintw((LINES/2)+1, (COLS/2)-9, "Current: %3dhx%dw", LINES, COLS);    // and their current size
+        refresh();
+        if(getch() == 'q'){   
+            free_memory();      //frees the memory allocated to the snake and it's segments                                  //if user presses the Spacebar
+            endwin();
+            exit(0);
+        }
+        nodelay(stdscr, FALSE);     //turns back on delay so user can see message
+        napms(100);                 //wait before checking again
+    }
+    clear();
+    nodelay(stdscr, TRUE);
+}
+
 //function for getting time played
 int time_update(){
     time_t current = time(NULL);                //gets the current time
@@ -114,19 +133,16 @@ int main(){
     keypad(stdscr, TRUE);               //allows arrow input from keypad
     nodelay(stdscr, TRUE);              // sets content to run without delay w/out needs input to move
 
-    //define snake pit
     if(setSize){
-        if(LINES < 21 || COLS < 20){
-            mvprintw(LINES/2, (COLS/2)-17, "Terminal must be at least 21hx20w");    //notifies user of terminal requirements
-            mvprintw((LINES/2)+1, (COLS/2)-9, "Current: %3dhx%dw", LINES, COLS);    // and their current size
-            refresh();
-            nodelay(stdscr, FALSE);     //turns back on delay so user can see message
-            getch();                    // and waits for user to press a character to start
-            endwin();
-            exit(0);
-            return 1;
-        }
+        minWidth = 20;
+        minHeight = 21;
+    } else{
+        minWidth = WIDTH;
+        minHeight = HEIGHT + 1;
     }
+    //check terminal size
+    term_size();
+    //create snake pit
     create_game_window();
 
     //create snake at center
@@ -161,6 +177,8 @@ int main(){
         clear();
         refresh();
 
+        //check to see if current terminal size meets requirements
+        term_size();
         //recreate window if resized before start
         // & redraw border of snake pit
         create_game_window();
