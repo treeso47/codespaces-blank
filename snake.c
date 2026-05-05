@@ -38,10 +38,19 @@ void snake_head(int x, int y) {
     snake = new_head;       //and the new segment as the front
 }
 
+void draw_snake(){
+    // Draw snake segments at current location
+    SnakeSegment *segment = snake;
+    while (segment) {
+        mvprintw(segment->y, segment->x, "#");
+        segment = segment->next;
+    }
+}
+
 // Remove the tail segment
 void remove_tail() {
     SnakeSegment *current = snake;          //looks at current front of snake
-    //if (!current || !current->next) return; //if thr
+    //if (!current || !current->next) return; //if the snakeSegment points to nothing or it has no next segment
 
     while (current->next->next) {   //checks to see if there is a segment two locations behind the current
         current = current->next;    //if so check again with next segment
@@ -164,24 +173,13 @@ int main(){
         //Create food item
         mvprintw(foodY, foodX, "O");
 
-        // Draw snake segments at current location
-        SnakeSegment *segment = snake;
-        while (segment) {
-            mvprintw(segment->y, segment->x, "#");
-            segment = segment->next;
-        }
+        draw_snake();
 
         // Display score & current play time
         mvprintw(0, 2, "Score: %d", score);     //places score
         int cur_time = time_update();      //gets current play time
         mvprintw(0, COLS - 6, "%2d:%02d", cur_time/60, cur_time%60);    //displays play time in seconds and minutes in top right
         refresh();
-
-        // checking text input locations, looks like must be before if for input
-        // mvaddstr(6,50,"as");
-        // refresh();
-        // mvwaddstr(a, maxY/2,maxX/2,"as");       //maxY not working
-        // wrefresh(a);
 
         //User Inputs
         int input = getch();        //gets value of user key presses                                //while not going in opposite direction
@@ -200,7 +198,7 @@ int main(){
         else if (direction == RIGHT) frontX++;      // or right
 
         // Check for game end conditions
-        // ( left edge,        right edge,          top,            bottom,      collides with self,        win condition)
+        // ( left edge,        right edge,          top,            bottom,      collides with self,        win condition      )
         if (frontX <= 0 || frontX >= maxX - 1 || frontY <= 1 || frontY >= maxY || self_collision() || snakeLength == goalLength) {
             break; // go to Game over/Won screen
         }
