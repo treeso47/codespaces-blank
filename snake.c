@@ -27,6 +27,8 @@ int setSize = 0;       // 1 = game area based on terminal size, 0 = game area pr
 WINDOW *gameWin;        //snake pit window
 int minWidth, minHeight;    //int values for defining the minimum terminal size
 int pauseTime = 0;              //int value to hold time spent paused
+int gameStarted = 0, gamePaused = 0;    //int values to track if the game has been started and/or is paused
+int waitTime = 100;                 //milliseconds to wait between actions/checks
 
 void create_game_window(){
     if(setSize){
@@ -118,23 +120,28 @@ void gameOver(){
     endwin();
     exit(0);
 }
-
+void pause_game();
 void term_size(){
-   while(LINES < minHeight || COLS < minWidth){
-        clear();
-        mvprintw(LINES/2, (COLS/2)-17, "Terminal must be at least %02dhx%02dw", minHeight, minWidth);    //notifies user of terminal requirements
-        mvprintw((LINES/2)+1, (COLS/2)-9, "Current: %3dhx%dw", LINES, COLS);    // and their current size
-        refresh();
+    int called = 0;
+    while(LINES < minHeight || COLS < minWidth){
+        called = 1;
+        wclear(gameWin);
+        create_game_window();   //then recreates the window
+        mvwprintw(gameWin, LINES/2, (maxX/2)-17, "Terminal must be at least %02dhx%02dw", minHeight, minWidth);    //notifies user of terminal requirements
+        mvwprintw(gameWin, (LINES/2)+1, (maxX/2)-9, "Current: %3dhx%dw", LINES, COLS);    // and their current size
+        wrefresh(gameWin);
         if(getch() == 'q'){
             clear();
             create_game_window();
             gameOver();
         }
         nodelay(stdscr, FALSE);     //turns back on delay so user can see message
-        napms(100);                 //wait before checking again
+        napms(waitTime);                 //wait before checking again
     }
-    clear();
+    wclear(gameWin);
     nodelay(stdscr, TRUE);
+    //if it was called while playing it will automatically pause
+    if(gameStarted && !gamePaused && called){ pause_game(); }
 }
 
 //function for getting time played
@@ -146,22 +153,26 @@ int time_update(){
 }
 
 void pause_game(){
+    gamePaused = 1;
     time_t pauseStart = time(NULL);
     wclear(gameWin);
-    create_game_window();
-    mvwprintw(gameWin, (maxY / 2)-1, (maxX / 2) - 6, "GAME PAUSED");
-    mvwprintw(gameWin, (maxY / 2), (maxX / 2) - 12, "Press Space To Continue");    //Tells user to press the space bar to continue
-    wrefresh(gameWin);
     while(1){               //wait for user input before starting
+        term_size();    //checks terminal size while paused
+        create_game_window();   //then recreates the window
+        mvwprintw(gameWin, (maxY / 2)-1, (maxX / 2) - 6, "GAME PAUSED");
+        mvwprintw(gameWin, (maxY / 2), (maxX / 2) - 12, "Press Space To Continue");    //Tells user to press the space bar to continue
+        wrefresh(gameWin);
         int pauseInput = getch();
         if(pauseInput == ' '){                                     //if user presses the Spacebar
             time_t pauseEnd = time(NULL);
             int timePaused = difftime(pauseEnd, pauseStart);
             pauseTime += timePaused;
+            gamePaused = 0;
             break;
         } else if(pauseInput == 'q'){
             gameOver();
         }
+        napms(waitTime);                 //wait before checking again
     }
 }
 
@@ -197,17 +208,19 @@ int main(){
     goalLength = maxY+maxX;
 
     //start screen
-    mvwprintw(gameWin, (maxY / 2) - 1, (maxX / 2) - 8, "Welcome to Snake");     //Start screen content for the game
-    mvwprintw(gameWin, (maxY / 2), (maxX / 2) - 11, "Press Space To Start");    //Tells user to press the space bar to start
-    wrefresh(gameWin);
     while(1){               //wait for user input before starting
+        term_size();        //check termin size on start screen
+        create_game_window();   //recreate window
+        mvwprintw(gameWin, (maxY / 2) - 1, (maxX / 2) - 8, "Welcome to Snake");     //Start screen content for the game
+        mvwprintw(gameWin, (maxY / 2), (maxX / 2) - 11, "Press Space To Start");    //Tells user to press the space bar to start
+        wrefresh(gameWin);
         if(getch() == ' '){                                     //if user presses the Spacebar
-            
             //marks start time
             start = time(NULL);                                 //initializes start time
-            break;
-
+            gameStarted = 1;
+            break;      //continue to game
         }
+        napms(waitTime);                 //wait before checking again
     }
 
     while(1){
@@ -273,25 +286,10 @@ int main(){
             remove_tail();                          // snake loses it's last segment/tail
         }
 
-        napms(100); // Delay for snake speed
+        napms(waitTime); // Delay for snake speed
     }
 
     // Game over screen
     gameOver();
-    /*wclear(gameWin);        //clear content from snake pit
-    box(gameWin,0,0);       //regenerate box for snake pit
-    if(snakeLength == goalLength){mvwprintw(gameWin, (maxY / 2) - 1, (maxX / 2) - 4, "You Win");}   //if win condition met
-    else{mvwprintw(gameWin, (maxY / 2) - 1, (maxX / 2) - 5, "Game Over");}                          //if win condition not met
-    mvwprintw(gameWin, maxY / 2, (maxX / 2) - 7, "Final Score: %d", score);        //displays current score
-    mvprintw(0, (maxX/2) - 4, "            ");      //remove 'q' to quit indicator
-    mvprintw(0, maxX - 19, "Time Elapsed:");                //adds "Time Elapses: " in front of play time
-    wrefresh(gameWin);          //refresh content for game window to show the new content
-    refresh();                  //refresh window the show content not in snake pit
-    napms(1000);    //in case user presses a key at the same time that they lose
-    nodelay(stdscr, FALSE);     //add delay for user to see above text
-    getch();        //wait for user input before closing
-    free_memory();      //frees the memory allocated to the snake and it's segments
-    endwin();
-    exit(0);*/
     return 0;
 }
