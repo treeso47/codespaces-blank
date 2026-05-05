@@ -126,6 +126,19 @@ int time_update(){
     return elapsed;                             //returns the difference
 }
 
+void pause_game(){
+    clear();
+    create_game_window();
+    mvwprintw(gameWin, (maxY / 2)-1, (maxX / 2) - 6, "GAME PAUSED");
+    mvwprintw(gameWin, (maxY / 2), (maxX / 2) - 12, "Press Space To Continue");    //Tells user to press the space bar to continue
+    wrefresh(gameWin);
+    while(1){               //wait for user input before starting
+        if(getch() == ' '){                                     //if user presses the Spacebar
+            break;
+        }
+    }
+}
+
 int main(){
     initscr();                          //initializes screen
     noecho();                           //stops the window from displaying typed input
@@ -177,6 +190,8 @@ int main(){
         clear();
         refresh();
 
+        //if(getch() == 'p'){ pause_game();}
+
         //check to see if current terminal size meets requirements
         term_size();
         //recreate window if resized before start
@@ -202,7 +217,9 @@ int main(){
         else if ((input == 's' || input == KEY_DOWN) && direction != UP) direction = DOWN;      //if user presses down or equivalent key
         else if ((input == 'a' || input == KEY_LEFT) && direction != RIGHT) direction = LEFT;   //if user presses left or equivalent key
         else if ((input == 'd' || input == KEY_RIGHT) && direction != LEFT) direction = RIGHT;  //if user presses right or equivalent key
+        else if (input == 'p') pause_game();
         else if (input == 'q' || input == 'Q') break;               //for quitting the game
+        //else if (input = 'p') pause_game();
 
         // Calculate new location for front of snake
         int frontX = snake->x;      //gets current x of snake head
