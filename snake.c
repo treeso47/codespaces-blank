@@ -23,7 +23,7 @@ int score = 0;                  //player score int value
 int maxX, maxY;                 //the outermost x and y values
 int snakeLength, goalLength;    //to keep track of current and goal lengths
 time_t start;
-int setSize = 0;       // 1 = game area based on terminal size, 0 = game area predefined
+int setSize = 1;       // 1 = game area based on terminal size, 0 = game area predefined
 WINDOW *gameWin;        //snake pit window
 int minWidth, minHeight;    //int values for defining the minimum terminal size
 int pauseTime = 0;              //int value to hold time spent paused
@@ -246,7 +246,7 @@ int main(){
         create_game_window();
 
         //Create food item
-        mvprintw(foodY, foodX, "O");
+        mvprintw(foodY, foodX, "@");
 
         //draws the snake
         draw_snake();
