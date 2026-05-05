@@ -30,6 +30,7 @@ int pauseTime = 0;              //int value to hold time spent paused
 int gameStarted = 0, gamePaused = 0;    //int values to track if the game has been started and/or is paused
 int waitTime = 100;                 //milliseconds to wait between actions/checks
 
+//(re)creates snake pit area
 void create_game_window(){
     if(setSize){
         gameWin = newwin(LINES-1,COLS,1,0);         //defines snake pit size based on the terminal size
@@ -38,6 +39,7 @@ void create_game_window(){
     }
     box(gameWin,0,0);                               //creates border for the snake pit area
     getmaxyx(gameWin, maxY, maxX);                  //gets the height and width for the snake pit
+    goalLength = maxY+maxX;                     //updates goal length(in case it changes)
     refresh();
     wrefresh(gameWin);
 }
@@ -58,9 +60,10 @@ void snake_head(int x, int y) {
 
 void draw_snake(){
     // Draw snake segments at current location
-    SnakeSegment *segment = snake;              //point to front of snake
+    mvprintw(snake->y, snake->x, "O");
+    SnakeSegment *segment = snake -> next;              //point to front of snake
     while (segment) {                           //cycle through the subsequent objects attached to it
-        mvprintw(segment->y, segment->x, "#");  // and draw each segment at it's x & y coordinates
+        mvprintw(segment->y, segment->x, "o");  // and draw each segment at it's x & y coordinates
         segment = segment->next;                // then look at next segment
     }
 }
@@ -109,7 +112,7 @@ void gameOver(){
     if(snakeLength == goalLength){mvwprintw(gameWin, (maxY / 2) - 1, (maxX / 2) - 4, "You Win");}   //if win condition met
     else{mvwprintw(gameWin, (maxY / 2) - 1, (maxX / 2) - 5, "Game Over");}                          //if win condition not met
     mvwprintw(gameWin, maxY / 2, (maxX / 2) - 7, "Final Score: %d", score);        //displays current score
-    mvprintw(0, (maxX/2) - 4, "            ");      //remove 'q' to quit indicator
+    mvprintw(0, (maxX/2) - 6, "            ");      //remove 'q' to quit indicator
     mvprintw(0, maxX - 19, "Time Elapsed:");                //adds "Time Elapses: " in front of play time
     wrefresh(gameWin);          //refresh content for game window to show the new content
     refresh();                  //refresh window the show content not in snake pit
@@ -209,13 +212,12 @@ int main(){
     //Generate initial coordinates for the food item
     place_food();
 
-    //defines initial snake length value and goal length
+    //defines initial snake length value
     snakeLength = 3;
-    goalLength = maxY+maxX;
 
     //start screen
     while(1){               //wait for user input before starting
-        term_size();        //check termin size on start screen
+        term_size();        //check terminal size on start screen
         create_game_window();   //recreate window
         mvwprintw(gameWin, (maxY / 2) - 1, (maxX / 2) - 8, "Welcome to Snake");     //Start screen content for the game
         mvwprintw(gameWin, (maxY / 2), (maxX / 2) - 11, "Press Space To Start");    //Tells user to press the space bar to start
@@ -253,7 +255,7 @@ int main(){
         mvprintw(0, 2, "Score: %d", score);     //places score
         int cur_time = time_update();      //gets current play time
         mvprintw(0, maxX - 6, "%2d:%02d", cur_time/60, cur_time%60);    //displays play time in seconds and minutes in top right
-        mvprintw(0, (maxX/2) - 4, "'q' to quit");         //tell user input for ending game
+        mvprintw(0, (maxX/2) - 6, "'q' to quit");         //tell user input for ending game
         refresh();
 
         //User Inputs
