@@ -158,6 +158,12 @@ int main(){
         clear();
         refresh();
 
+        //recreate window if resized before start
+        if(setSize){
+            gameWin = newwin(LINES-1,COLS,1,0);         //defines snake pit size based on the terminal size
+        } else {
+            gameWin = newwin(HEIGHT-1,WIDTH,1,0);       //defines snake pit size based on predefined HEIGHT and WIDTH values
+        }
         //redraw border of snake pit
         box(gameWin,0,0);
         wrefresh(gameWin);
