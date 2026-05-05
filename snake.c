@@ -211,15 +211,14 @@ int main(){
         term_size();        //check terminal size on start screen
         create_game_window();   //recreate window
         mvwprintw(gameWin, (maxY / 2) - 1, (maxX / 2) - 8, "Welcome to Snake");     //Start screen content for the game
-        //mvwprintw(gameWin, (maxY / 2), (maxX / 2) - 11, "Press Space To Start");    //Tells user to press the space bar to start
-        mvwprintw(gameWin, (maxY / 2), (maxX / 2) - 9, "Select Window Size");
+        mvwprintw(gameWin, (maxY / 2), (maxX / 2) - 9, "Select Window Size");               //User selects play area size
         mvwprintw(gameWin, (maxY / 2)+1, (maxX / 2) - 8, "0: Fixed %dhx%dw", HEIGHT, WIDTH);
         mvwprintw(gameWin, (maxY / 2)+2, (maxX / 2) - 8, "1: Full Terminal");
         wrefresh(gameWin);
         int startInput = getch();
         if(startInput == '1' || startInput == '2'){                                     //if user presses the Spacebar
-            //marks start time
             setSize = startInput - 49;
+            //marks start time
             start = time(NULL);                                 //initializes start time
             gameStarted = 1;
             break;      //continue to game
