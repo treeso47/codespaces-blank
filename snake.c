@@ -123,6 +123,7 @@ void gameOver(){
 void pause_game();
 void term_size(){
     int called = 0;
+    time_t pauseStart = time(NULL);
     while(LINES < minHeight || COLS < minWidth){
         called = 1;
         wclear(gameWin);
@@ -141,7 +142,12 @@ void term_size(){
     wclear(gameWin);
     nodelay(stdscr, TRUE);
     //if it was called while playing it will automatically pause
-    if(gameStarted && !gamePaused && called){ pause_game(); }
+    if(gameStarted && !gamePaused && called){
+        time_t pauseEnd = time(NULL);
+        int timePaused = difftime(pauseEnd, pauseStart);    //calculate time spent on too small terminal
+        pauseTime += timePaused;                    //adds it to time spent paused as to have it accounted for in play time
+        pause_game();
+    }
 }
 
 //function for getting time played
